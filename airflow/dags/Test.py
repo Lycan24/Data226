@@ -1,9 +1,14 @@
 # In Cloud Composer, add apache-airflow-providers-snowflake to PYPI Packages
 from airflow import DAG
+from airflow.models import Variable
 from airflow.decorators import task
+from airflow.operators.python import get_current_context
 from airflow.providers.snowflake.hooks.snowflake import SnowflakeHook
 
 import snowflake.connector
+import requests
+from datetime import datetime, timedelta
+
 
 
 def return_snowflake_conn():
