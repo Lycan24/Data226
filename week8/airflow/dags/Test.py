@@ -21,7 +21,7 @@ def return_snowflake_conn():
     return conn.cursor()
 
 @task
-def set_stage():
+def creat_table():
     cor = return_snowflake_conn()
     sql1 = '''
     CREATE TABLE IF NOT EXISTS dev.raw_data.user_session_channel (
@@ -35,15 +35,11 @@ def set_stage():
     ts timestamp  
     );'''
 
-    sql3 = '''CREATE OR REPLACE STAGE dev.raw_data.blob_stage
-    url = 's3://s3-geospatial/readonly/'
-    file_format = (type = csv, skip_header = 1, field_optionally_enclosed_by = '"');'''
 
     try:  
         cor.execute("BEGIN;")
         cor.execute(sql1)
         cor.execute(sql2)
-        cor.execute(sql3)
         cor.execute("COMMIT;")
     
     except Exception as e:
@@ -51,8 +47,13 @@ def set_stage():
         print(e)
         raise e
 @task
-def load():
+def populate_table():
     cor = return_snowflake_conn()
+
+    sql3 = '''CREATE OR REPLACE STAGE dev.raw_data.blob_stage
+    url = 's3://s3-geospatial/readonly/'
+    file_format = (type = csv, skip_header = 1, field_optionally_enclosed_by = '"');'''
+
     sql4 = '''COPY INTO dev.raw_data.user_session_channel
     FROM @dev.raw_data.blob_stage/user_session_channel.csv;'''
 
@@ -60,6 +61,7 @@ def load():
     FROM @dev.raw_data.blob_stage/session_timestamp.csv;'''
     try:  
         cor.execute("BEGIN;")
+        cor.execute(sql3)
         cor.execute(sql4)
         cor.execute(sql5)
         cor.execute("COMMIT;")
@@ -77,6 +79,6 @@ with DAG(
     tags=['ETL'],
     schedule = '30 2 * * *'
 ) as dag:
-    set_stage()
-    load()
+    creat_table()
+    populate_table()
    
