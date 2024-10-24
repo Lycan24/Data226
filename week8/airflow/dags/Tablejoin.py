@@ -25,7 +25,7 @@ def table_join():
         select usc.SESSIONID, usc.USERID, usc.CHANNEL, st.TS
         from dev.raw_data.user_session_channel as usc
         full join dev.raw_data.session_timestamp as st
-        on sessionId;'''
+        on usc.SESSIONID=st.SESSIONID;'''
 
     try:  
         cor.execute("BEGIN;")
