@@ -42,8 +42,9 @@ def duplicate_check():
 
 
     sql = '''CREATE OR REPLACE TABLE duplicateCheck as 
-        SELECT COUNT(DISTINCT SS.SESSIONID)
+        SELECT COUNT(DISTINCT SS.SESSIONID) as sessionid_count
         FROM dev.raw_data.session_summary as SS
+        GROUP BY SS.SESSIONID
         ORDER BY SS.SESSIONID DESC 
         LIMIT 1;'''
 
